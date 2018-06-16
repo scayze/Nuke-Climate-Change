@@ -1,0 +1,393 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://Scenes/Earth.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/Sea.gd" type="Script" id=2]
+[ext_resource path="res://Assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=3]
+
+[sub_resource type="Shader" id=6]
+
+code = "shader_type spatial;
+
+uniform vec4 below_water : hint_color;
+uniform vec4 mountain : hint_color;
+uniform vec4 land : hint_color;
+
+uniform float water_level = 0.0;
+
+vec3 random3(vec3 c) 
+{
+    float j = 4096.0 * sin(dot(c,vec3(17.0, 59.4, 15.0)));
+    vec3 r;
+    r.z = fract(512.0 * j);
+    j *= 0.125;
+    r.x = fract(512.0 * j);
+    j *= 0.125;
+    r.y = fract(512.0 * j);
+    return r - 0.5;
+}
+
+float simplex_noise(vec3 p) 
+{
+    vec3 s = floor(p + dot(p, vec3(0.3333333)));
+    vec3 x = p - s + dot(s, vec3(0.1666667));
+
+    vec3 e = step(vec3(0.0), x - x.yzx);
+    vec3 i1 = e * (1.0 - e.zxy);
+    vec3 i2 = 1.0 - e.zxy * (1.0 - e);
+
+    vec3 x1 = x - i1 + 0.1666667;
+    vec3 x2 = x - i2 + 2.0 * 0.1666667;
+    vec3 x3 = x - 1.0 + 3.0 * 0.1666667;
+
+    vec4 w, d;
+
+    w.x = dot(x, x);
+    w.y = dot(x1, x1);
+    w.z = dot(x2, x2);
+    w.w = dot(x3, x3);
+
+    w = max(0.6 - w, vec4(0.0));
+
+    d.x = dot(random3(s), x);
+    d.y = dot(random3(s + i1), x1);
+    d.z = dot(random3(s + i2), x2);
+    d.w = dot(random3(s + 1.0), x3);
+
+    w *= w;
+    w *= w;
+    d *= w;
+
+    return dot(d, vec4(52.0));
+}
+
+float height_map(in vec3 position)
+{
+	return simplex_noise(position)
+		+ simplex_noise(2.0 * position) / 2.0 
+		+ simplex_noise(4.0 * position) / 4.0
+		+ simplex_noise(8.0 * position) / 8.0
+		+ simplex_noise(16.0 * position) / 16.0
+		+ simplex_noise(32.0 * position) / 32.0;
+}
+
+void vertex()
+{
+	// store model normal(not transformed) to color
+	COLOR = vec4(0.5 * (NORMAL + 1.0), 1.0);
+	float height = height_map(COLOR.rgb);
+	VERTEX = VERTEX + normalize(VERTEX) * height / 10.0;
+	
+}
+
+void fragment()
+{
+	// use model normal to generate height map
+	float height = height_map(COLOR.rgb);
+	
+	if(height < 0.2) {
+		ALBEDO = land.rgb;
+	}
+	else {
+		ALBEDO = mountain.rgb;
+	}
+	
+	if(height < water_level) {
+		ALBEDO = below_water.rgb;
+	}
+	//color += sea(height);
+	
+	
+}"
+
+[sub_resource type="ShaderMaterial" id=13]
+
+render_priority = 0
+shader = SubResource( 6 )
+shader_param/below_water = Color( 0.621094, 0.401736, 0.225632, 1 )
+shader_param/mountain = Color( 0.59375, 0.59375, 0.59375, 1 )
+shader_param/land = Color( 0.0791016, 0.632813, 0, 1 )
+shader_param/water_level = null
+_sections_unfolded = [ "shader_param" ]
+
+[sub_resource type="SphereMesh" id=14]
+
+material = SubResource( 13 )
+custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
+radius = 1.0
+height = 2.0
+radial_segments = 64
+rings = 32
+is_hemisphere = false
+
+[sub_resource type="SpatialMaterial" id=11]
+
+render_priority = 0
+flags_transparent = true
+flags_unshaded = false
+flags_vertex_lighting = false
+flags_no_depth_test = false
+flags_use_point_size = false
+flags_world_triplanar = false
+flags_fixed_size = false
+flags_albedo_tex_force_srgb = false
+vertex_color_use_as_albedo = false
+vertex_color_is_srgb = false
+params_diffuse_mode = 0
+params_specular_mode = 0
+params_blend_mode = 0
+params_cull_mode = 0
+params_depth_draw_mode = 0
+params_line_width = 1.0
+params_point_size = 1.0
+params_billboard_mode = 0
+params_grow = false
+params_use_alpha_scissor = false
+albedo_color = Color( 0, 0.789063, 1, 0.414353 )
+metallic = 0.0
+metallic_specular = 0.5
+metallic_texture_channel = 0
+roughness = 0.0
+roughness_texture_channel = 0
+emission_enabled = false
+normal_enabled = false
+rim_enabled = false
+clearcoat_enabled = false
+anisotropy_enabled = false
+ao_enabled = false
+depth_enabled = false
+subsurf_scatter_enabled = false
+transmission_enabled = false
+refraction_enabled = false
+detail_enabled = false
+uv1_scale = Vector3( 1, 1, 1 )
+uv1_offset = Vector3( 0, 0, 0 )
+uv1_triplanar = false
+uv1_triplanar_sharpness = 1.0
+uv2_scale = Vector3( 1, 1, 1 )
+uv2_offset = Vector3( 0, 0, 0 )
+uv2_triplanar = false
+uv2_triplanar_sharpness = 1.0
+proximity_fade_enable = false
+distance_fade_enable = false
+_sections_unfolded = [ "Albedo" ]
+
+[sub_resource type="SphereMesh" id=12]
+
+material = SubResource( 11 )
+custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
+radius = 0.983128
+height = 1.96626
+radial_segments = 64
+rings = 32
+is_hemisphere = false
+
+[sub_resource type="Shader" id=15]
+
+code = "shader_type spatial;
+
+vec3 random3(vec3 c) 
+{
+    float j = 4096.0 * sin(dot(c,vec3(17.0, 59.4, 15.0)));
+    vec3 r;
+    r.z = fract(512.0 * j);
+    j *= 0.125;
+    r.x = fract(512.0 * j);
+    j *= 0.125;
+    r.y = fract(512.0 * j);
+    return r - 0.5;
+}
+
+float simplex_noise(vec3 p) 
+{
+    vec3 s = floor(p + dot(p, vec3(0.3333333)));
+    vec3 x = p - s + dot(s, vec3(0.1666667));
+
+    vec3 e = step(vec3(0.0), x - x.yzx);
+    vec3 i1 = e * (1.0 - e.zxy);
+    vec3 i2 = 1.0 - e.zxy * (1.0 - e);
+
+    vec3 x1 = x - i1 + 0.1666667;
+    vec3 x2 = x - i2 + 2.0 * 0.1666667;
+    vec3 x3 = x - 1.0 + 3.0 * 0.1666667;
+
+    vec4 w, d;
+
+    w.x = dot(x, x);
+    w.y = dot(x1, x1);
+    w.z = dot(x2, x2);
+    w.w = dot(x3, x3);
+
+    w = max(0.6 - w, vec4(0.0));
+
+    d.x = dot(random3(s), x);
+    d.y = dot(random3(s + i1), x1);
+    d.z = dot(random3(s + i2), x2);
+    d.w = dot(random3(s + 1.0), x3);
+
+    w *= w;
+    w *= w;
+    d *= w;
+
+    return dot(d, vec4(52.0));
+}
+
+float height_map(in vec3 position)
+{
+	return simplex_noise(position)
+		+ simplex_noise(2.0 * position) / 2.0 
+		+ simplex_noise(4.0 * position) / 4.0
+		+ simplex_noise(8.0 * position) / 8.0
+		+ simplex_noise(16.0 * position) / 16.0
+		+ simplex_noise(32.0 * position) / 32.0;
+}
+
+void vertex()
+{
+	// store model normal(not transformed) to color
+	COLOR = vec4(0.5 * (NORMAL + 1.0), 1.0);
+}
+
+vec4 cloud(in vec3 position, in float time)
+{
+	float height = clamp(height_map(position * 3.0 + time / 20.0), 0.0, 1.0) * 0.9;
+	
+	return vec4(height, height, height, height);
+}
+
+void fragment()
+{
+	// use model normal to generate height map
+	vec4 color = round(cloud(COLOR.xyz, TIME) * 3.0) / 3.0;
+	
+	ALBEDO = color.rgb;
+	ALPHA = color.a;
+}"
+
+[sub_resource type="ShaderMaterial" id=16]
+
+render_priority = 0
+shader = SubResource( 15 )
+
+[sub_resource type="SphereMesh" id=17]
+
+material = SubResource( 16 )
+custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
+radius = 1.1
+height = 2.2
+radial_segments = 64
+rings = 32
+is_hemisphere = false
+
+[node name="Main" type="Node" index="0"]
+
+[node name="Earth" type="MeshInstance" parent="." index="0"]
+
+layers = 1
+material_override = null
+cast_shadow = 1
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = SubResource( 14 )
+skeleton = NodePath("..")
+material/0 = null
+script = ExtResource( 1 )
+_sections_unfolded = [ "Transform" ]
+texture = null
+
+[node name="Sea" type="MeshInstance" parent="." index="1"]
+
+layers = 1
+material_override = null
+cast_shadow = 1
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = SubResource( 12 )
+skeleton = NodePath("..")
+material/0 = null
+script = ExtResource( 2 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="Clouds" type="MeshInstance" parent="." index="2"]
+
+visible = false
+layers = 1
+material_override = null
+cast_shadow = 1
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = SubResource( 17 )
+skeleton = NodePath("..")
+material/0 = null
+_sections_unfolded = [ "Transform" ]
+
+[node name="Camera" type="Camera" parent="." index="3"]
+
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.92313 )
+keep_aspect = 1
+cull_mask = 1048575
+environment = null
+h_offset = 0.0
+v_offset = 0.0
+doppler_tracking = 0
+projection = 0
+current = false
+fov = 70.0
+size = 1.0
+near = 0.05
+far = 100.0
+script = ExtResource( 3 )
+enabled = true
+mouse_mode = 2
+mouselook = true
+sensitivity = 0.5
+smoothness = 0.5
+privot = null
+distance = 5.0
+rotate_privot = false
+collisions = true
+yaw_limit = 360
+pitch_limit = 360
+movement = true
+speed = 1.0
+forward_action = "ui_up"
+backward_action = "ui_down"
+left_action = "ui_left"
+right_action = "ui_right"
+use_gui = true
+gui_action = "ui_cancel"
+
+[node name="OmniLight" type="OmniLight" parent="." index="4"]
+
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.15342, 0.842147, 2.62712 )
+layers = 1
+light_color = Color( 1, 1, 1, 1 )
+light_energy = 1.0
+light_indirect_energy = 1.0
+light_negative = false
+light_specular = 0.5
+light_bake_mode = 1
+light_cull_mask = -1
+shadow_enabled = false
+shadow_color = Color( 0, 0, 0, 1 )
+shadow_bias = 0.15
+shadow_contact = 0.0
+shadow_reverse_cull_face = false
+editor_only = false
+omni_range = 5.82845
+omni_attenuation = 1.0
+omni_shadow_mode = 1
+omni_shadow_detail = 1
+
+
