@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/ico.obj-89bce28c20f00f52092e1d8abf24f461.mesh"
+
+[deps]
+
+files=[ "res://.import/ico.obj-89bce28c20f00f52092e1d8abf24f461.mesh" ]
+
+source_file="res://Assets/ico.obj"
+dest_files=[ "res://.import/ico.obj-89bce28c20f00f52092e1d8abf24f461.mesh", "res://.import/ico.obj-89bce28c20f00f52092e1d8abf24f461.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )

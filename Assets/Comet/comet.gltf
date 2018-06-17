@@ -1,0 +1,183 @@
+{
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5123,
+            "count" : 300,
+            "max" : [
+                298
+            ],
+            "min" : [
+                0
+            ],
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 299,
+            "max" : [
+                0.9513747692108154,
+                1.3380353450775146,
+                0.9999999403953552
+            ],
+            "min" : [
+                -0.9513747692108154,
+                -1.206946611404419,
+                -0.9999999403953552
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 299,
+            "max" : [
+                0.9960622787475586,
+                0.8441458940505981,
+                0.9630690217018127
+            ],
+            "min" : [
+                -0.9987822771072388,
+                -0.9334886074066162,
+                -0.964467465877533
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5126,
+            "count" : 299,
+            "max" : [
+                0.9995917677879333,
+                0.863702654838562,
+                0.6149567365646362,
+                1.0
+            ],
+            "min" : [
+                -0.8746502995491028,
+                -0.9994423389434814,
+                -0.9459287524223328,
+                -1.0
+            ],
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 299,
+            "max" : [
+                0.9996994733810425,
+                0.9996994834509678
+            ],
+            "min" : [
+                0.0003005165490321815,
+                0.015925109386444092
+            ],
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5126,
+            "count" : 299,
+            "max" : [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "min" : [
+                0.11953843268596633,
+                0.0,
+                0.010960094192796307,
+                1.0
+            ],
+            "type" : "VEC4"
+        }
+    ],
+    "asset" : {
+        "generator" : "Khronos Blender glTF 2.0 exporter",
+        "version" : "2.0"
+    },
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 600,
+            "byteOffset" : 0,
+            "target" : 34963
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 3588,
+            "byteOffset" : 600,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 3588,
+            "byteOffset" : 4188,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 4784,
+            "byteOffset" : 7776,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 2392,
+            "byteOffset" : 12560,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 4784,
+            "byteOffset" : 14952,
+            "target" : 34962
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 19736,
+            "uri" : "comet.bin"
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Icosphere",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "COLOR_0" : 5,
+                        "NORMAL" : 2,
+                        "POSITION" : 1,
+                        "TANGENT" : 3,
+                        "TEXCOORD_0" : 4
+                    },
+                    "indices" : 0
+                }
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Icosphere",
+            "translation" : [
+                0.18032550811767578,
+                0.12243008613586426,
+                0.13367652893066406
+            ]
+        }
+    ],
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ]
+}
