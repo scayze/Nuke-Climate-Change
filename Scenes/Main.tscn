@@ -1,56 +1,108 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=18 format=2]
 
-[ext_resource path="res://Assets/Shaders/earth_shader.shader" type="Shader" id=1]
-[ext_resource path="res://Assets/ico.obj" type="ArrayMesh" id=2]
-[ext_resource path="res://Scenes/Earth.gd" type="Script" id=3]
-[ext_resource path="res://Assets/Shaders/cloud_shader.shader" type="Shader" id=4]
-[ext_resource path="res://Scenes/Clouds.gd" type="Script" id=5]
-[ext_resource path="res://Assets/Shaders/water_shader.shader" type="Shader" id=6]
-[ext_resource path="res://Scenes/Sea.gd" type="Script" id=7]
-[ext_resource path="res://Scenes/Comet.tscn" type="PackedScene" id=8]
-[ext_resource path="res://Scenes/Camera.gd" type="Script" id=9]
+[ext_resource path="res://Scripts/Main.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/UI.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Assets/Shaders/earth_shader.shader" type="Shader" id=3]
+[ext_resource path="res://Assets/Earth/ico.obj" type="ArrayMesh" id=4]
+[ext_resource path="res://Scripts/Earth.gd" type="Script" id=5]
+[ext_resource path="res://Assets/Shaders/cloud_shader.shader" type="Shader" id=6]
+[ext_resource path="res://Scripts/Clouds.gd" type="Script" id=7]
+[ext_resource path="res://Scripts/Sea.gd" type="Script" id=8]
+[ext_resource path="res://Scripts/Camera.gd" type="Script" id=9]
+[ext_resource path="res://Assets/Music/Bushwick Tarantella Loop.ogg" type="AudioStream" id=10]
 
-[sub_resource type="SphereShape" id=1]
-
-radius = 1.0
-
-[sub_resource type="ShaderMaterial" id=2]
+[sub_resource type="ShaderMaterial" id=1]
 
 render_priority = 0
-shader = ExtResource( 1 )
+shader = ExtResource( 3 )
 shader_param/below_water = Color( 0.570313, 0.385128, 0.147034, 1 )
+shader_param/beach = Color( 1, 0.886624, 0.453125, 1 )
 shader_param/low_mountain = Color( 0.453125, 0.453125, 0.453125, 1 )
 shader_param/high_mountain = Color( 0.878906, 0.878906, 0.878906, 1 )
 shader_param/low_land = Color( 0.182404, 0.542969, 0, 1 )
-shader_param/high_land = Color( 0.16703, 0.433594, 0.00169373, 1 )
-shader_param/water_level = 1.00456
+shader_param/mid_land = Color( 0, 0.46875, 0.0183105, 1 )
+shader_param/high_land = Color( 0.14505, 0.378906, 0, 1 )
+shader_param/water_level = 1.01
+shader_param/seed = 71.9589
 _sections_unfolded = [ "shader_param" ]
 
-[sub_resource type="ShaderMaterial" id=3]
+[sub_resource type="ShaderMaterial" id=2]
 
-render_priority = 0
-shader = ExtResource( 4 )
-shader_param/low = Color( 1, 1, 1, 0.313726 )
-shader_param/mid = Color( 0.828125, 0.828125, 0.828125, 0.431373 )
-shader_param/high = Color( 0.671875, 0.671875, 0.671875, 0.588235 )
+render_priority = 1
+shader = ExtResource( 6 )
+shader_param/low = Color( 0.53125, 0.53125, 0.53125, 0.176784 )
+shader_param/mid = Color( 0.828125, 0.828125, 0.828125, 0.196078 )
+shader_param/high = Color( 1, 1, 1, 0.294118 )
+shader_param/seed = null
 _sections_unfolded = [ "shader_param" ]
+
+[sub_resource type="Shader" id=3]
+
+code = "shader_type spatial;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+uniform vec4 albedo : hint_color;
+uniform sampler2D texture_albedo : hint_albedo;
+uniform float specular;
+uniform float metallic;
+uniform float roughness : hint_range(0,1);
+uniform float point_size : hint_range(0,128);
+uniform sampler2D texture_metallic : hint_white;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_white;
+uniform vec4 roughness_texture_channel;
+uniform float clearcoat : hint_range(0,1);
+uniform float clearcoat_gloss : hint_range(0,1);
+uniform sampler2D texture_clearcoat : hint_white;
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+
+void vertex() {
+	UV=UV*uv1_scale.xy+uv1_offset.xy;
+	VERTEX = VERTEX + NORMAL * ( sin(TIME + VERTEX.y*10.0 + VERTEX.x*10.0 + VERTEX.z*10.0) - 1.0) * 0.0004;
+}
+
+
+
+
+void fragment() {
+	vec2 base_uv = UV;
+	vec4 albedo_tex = texture(texture_albedo,base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+	float metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	float roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);
+	ROUGHNESS = roughness_tex * roughness;
+	SPECULAR = specular;
+	ALPHA = albedo.a * albedo_tex.a;
+	vec2 clearcoat_tex = texture(texture_clearcoat,base_uv).xy;
+	CLEARCOAT = clearcoat*clearcoat_tex.x;	CLEARCOAT_GLOSS = clearcoat_gloss*clearcoat_tex.y;
+}
+"
 
 [sub_resource type="ShaderMaterial" id=4]
 
 render_priority = 0
-shader = ExtResource( 6 )
-shader_param/albedo = Color( 0, 0.098877, 0.632813, 0.745843 )
+shader = SubResource( 3 )
+shader_param/albedo = Color( 0.0195313, 0, 0.625, 0.862745 )
 shader_param/specular = 1.0
-shader_param/metallic = 1.0
+shader_param/metallic = 0.5
 shader_param/roughness = 0.0
-shader_param/point_size = null
-shader_param/metallic_texture_channel = null
-shader_param/roughness_texture_channel = null
-shader_param/uv1_scale = null
-shader_param/uv1_offset = null
-shader_param/uv2_scale = null
-shader_param/uv2_offset = null
-_sections_unfolded = [ "shader_param" ]
+shader_param/point_size = 1.0
+shader_param/metallic_texture_channel = Plane( 1, 0, 0, 0 )
+shader_param/roughness_texture_channel = Plane( 1, 0, 0, 0 )
+shader_param/clearcoat = 1.0
+shader_param/clearcoat_gloss = 0.5
+shader_param/uv1_scale = Vector3( 1, 1, 1 )
+shader_param/uv1_offset = Vector3( 0, 0, 0 )
+shader_param/uv2_scale = Vector3( 1, 1, 1 )
+shader_param/uv2_offset = Vector3( 0, 0, 0 )
+
+[sub_resource type="SphereShape" id=5]
+
+radius = 1.0
 
 [sub_resource type="ProceduralSky" id=6]
 
@@ -155,8 +207,72 @@ _sections_unfolded = [ "Ambient Light", "Background" ]
 
 [node name="Main" type="Node" index="0"]
 
-[node name="StaticBody" type="StaticBody" parent="." index="0"]
+script = ExtResource( 1 )
 
+[node name="UI" parent="." index="0" instance=ExtResource( 2 )]
+
+[node name="Spatial" type="Spatial" parent="." index="1"]
+
+transform = Transform( 0.980207, -0.197975, 0, 0.197975, 0.980207, 0, 0, 0, 1, 0, 0, 0 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="Earth" type="MeshInstance" parent="Spatial" index="0"]
+
+transform = Transform( 0.191544, 0.417527, 0.888247, 0, 0.905004, -0.425403, -0.981484, 0.0814836, 0.173348, 0, 0, 0 )
+layers = 1
+material_override = SubResource( 1 )
+cast_shadow = 0
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = ExtResource( 4 )
+skeleton = NodePath("..")
+material/0 = null
+script = ExtResource( 5 )
+_sections_unfolded = [ "Geometry", "Transform" ]
+
+[node name="Clouds" type="MeshInstance" parent="Spatial/Earth" index="0"]
+
+transform = Transform( 0.716798, 0.368139, -0.673182, 0.293208, 0.719894, 0.70589, 0.709034, -0.66987, 0.388645, 0, 0, 0 )
+layers = 1
+material_override = SubResource( 2 )
+cast_shadow = 0
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = ExtResource( 4 )
+skeleton = NodePath("..")
+material/0 = null
+script = ExtResource( 7 )
+_sections_unfolded = [ "Geometry", "Transform", "Visibility" ]
+
+[node name="Sea" type="MeshInstance" parent="Spatial/Earth" index="1"]
+
+transform = Transform( -0.550335, -0.111153, -0.839569, 0.169126, 0.96667, -0.238842, 0.829836, -0.270729, -0.508113, 0, 0, 0 )
+layers = 1
+material_override = SubResource( 4 )
+cast_shadow = 0
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = ExtResource( 4 )
+skeleton = NodePath("..")
+material/0 = null
+script = ExtResource( 8 )
+_sections_unfolded = [ "Geometry", "Transform", "material" ]
+
+[node name="StaticBody" type="StaticBody" parent="Spatial/Earth" index="2"]
+
+transform = Transform( 0.814174, 0.164441, -0.556849, 0.0530287, 0.933988, 0.353346, 0.578195, -0.317214, 0.751709, 0, 0, 0 )
 input_ray_pickable = true
 input_capture_on_drag = false
 collision_layer = 1
@@ -167,76 +283,27 @@ constant_linear_velocity = Vector3( 0, 0, 0 )
 constant_angular_velocity = Vector3( 0, 0, 0 )
 _sections_unfolded = [ "Transform" ]
 
-[node name="CollisionShape" type="CollisionShape" parent="StaticBody" index="0"]
+[node name="CollisionShape" type="CollisionShape" parent="Spatial/Earth/StaticBody" index="0"]
 
-shape = SubResource( 1 )
+shape = SubResource( 5 )
 disabled = false
 
-[node name="Spatial" type="Spatial" parent="." index="1"]
+[node name="Tween" type="Tween" parent="Spatial/Earth" index="3"]
 
-transform = Transform( 0.980207, -0.197975, 0, 0.197975, 0.980207, 0, 0, 0, 1, 0, 0, 0 )
-_sections_unfolded = [ "Transform" ]
-
-[node name="Earth" type="MeshInstance" parent="Spatial" index="0"]
-
-transform = Transform( 0.198288, 0.416957, 0.887033, 0, 0.905004, -0.425403, -0.980143, 0.0843524, 0.179451, 0, 0, 0 )
-layers = 1
-material_override = SubResource( 2 )
-cast_shadow = 1
-extra_cull_margin = 0.0
-use_in_baked_light = false
-lod_min_distance = 0.0
-lod_min_hysteresis = 0.0
-lod_max_distance = 0.0
-lod_max_hysteresis = 0.0
-mesh = ExtResource( 2 )
-skeleton = NodePath("..")
-material/0 = null
-script = ExtResource( 3 )
-_sections_unfolded = [ "Geometry", "Transform" ]
-
-[node name="Clouds" type="MeshInstance" parent="Spatial/Earth" index="0"]
-
-transform = Transform( 0.750932, 0.38567, -0.705239, 0.307171, 0.754176, 0.739504, 0.742798, -0.701769, 0.407153, 0, 0, 0 )
-layers = 1
-material_override = SubResource( 3 )
-cast_shadow = 1
-extra_cull_margin = 0.0
-use_in_baked_light = false
-lod_min_distance = 0.0
-lod_min_hysteresis = 0.0
-lod_max_distance = 0.0
-lod_max_hysteresis = 0.0
-mesh = ExtResource( 2 )
-skeleton = NodePath("..")
-material/0 = null
-script = ExtResource( 5 )
-_sections_unfolded = [ "Geometry", "Transform" ]
-
-[node name="Sea" type="MeshInstance" parent="Spatial/Earth" index="1"]
-
-transform = Transform( -0.525623, -0.106162, -0.84946, 0.174226, 0.962674, -0.228117, 0.838152, -0.266687, -0.485296, 0, 0, 0 )
-layers = 1
-material_override = SubResource( 4 )
-cast_shadow = 1
-extra_cull_margin = 0.0
-use_in_baked_light = false
-lod_min_distance = 0.0
-lod_min_hysteresis = 0.0
-lod_max_distance = 0.0
-lod_max_hysteresis = 0.0
-mesh = ExtResource( 2 )
-skeleton = NodePath("..")
-material/0 = null
-script = ExtResource( 7 )
-_sections_unfolded = [ "Geometry", "Transform" ]
+repeat = false
+playback_process_mode = 0
+playback_speed = 1.0
+playback/active = false
+playback/repeat = false
+playback/speed = 1.0
+_sections_unfolded = [ "playback" ]
 
 [node name="OmniLight" type="OmniLight" parent="." index="2"]
 
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.801757, 0.505167, 2.057 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.532472, -0.214334, 4.96019 )
 layers = 1
 light_color = Color( 1, 1, 1, 1 )
-light_energy = 2.0
+light_energy = 1.0
 light_indirect_energy = 1.0
 light_negative = false
 light_specular = 0.5
@@ -245,26 +312,22 @@ light_cull_mask = -1
 shadow_enabled = false
 shadow_color = Color( 0, 0, 0, 1 )
 shadow_bias = 0.15
-shadow_contact = 0.0
+shadow_contact = 1.0
 shadow_reverse_cull_face = false
 editor_only = false
-omni_range = 11.8942
+omni_range = 8.61855
 omni_attenuation = 1.0
 omni_shadow_mode = 1
 omni_shadow_detail = 1
-_sections_unfolded = [ "Light", "Omni" ]
+_sections_unfolded = [ "Light", "Omni", "Shadow" ]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." index="3"]
 
 environment = SubResource( 7 )
 
-[node name="Comet" parent="." index="4" instance=ExtResource( 8 )]
+[node name="Camera" type="Camera" parent="." index="4"]
 
-transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 1.92976, 0 )
-
-[node name="Camera" type="Camera" parent="." index="5"]
-
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.73611 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.58525 )
 keep_aspect = 1
 cull_mask = 1048575
 environment = null
@@ -278,5 +341,14 @@ size = 1.0
 near = 0.05
 far = 100.0
 script = ExtResource( 9 )
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." index="5"]
+
+stream = ExtResource( 10 )
+volume_db = 0.0
+pitch_scale = 1.0
+autoplay = true
+mix_target = 0
+bus = "Master"
 
 

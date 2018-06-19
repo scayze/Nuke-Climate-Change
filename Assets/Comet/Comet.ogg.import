@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/Comet.ogg-e1b5f60f8ed61b4f318b444705718bdd.oggstr"
+
+[deps]
+
+source_file="res://Assets/Comet/Comet.ogg"
+dest_files=[ "res://.import/Comet.ogg-e1b5f60f8ed61b4f318b444705718bdd.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

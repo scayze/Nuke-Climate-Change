@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/Bushwick Tarantella Loop.ogg-d1af78e552273acb717aa823960f0021.oggstr"
+
+[deps]
+
+source_file="res://Assets/Music/Bushwick Tarantella Loop.ogg"
+dest_files=[ "res://.import/Bushwick Tarantella Loop.ogg-d1af78e552273acb717aa823960f0021.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

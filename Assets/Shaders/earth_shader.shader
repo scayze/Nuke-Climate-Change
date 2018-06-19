@@ -1,18 +1,21 @@
 shader_type spatial;
-render_mode cull_disabled;
+render_mode cull_back;
 
 uniform vec4 below_water : hint_color;
-
+uniform vec4 beach : hint_color;
 uniform vec4 low_mountain : hint_color;
 uniform vec4 high_mountain : hint_color;
 uniform vec4 low_land : hint_color;
+uniform vec4 mid_land : hint_color;
 uniform vec4 high_land : hint_color;
 
 uniform float water_level = 0.0;
 
+uniform float seed = 14.0;
+
 vec3 random3(vec3 c) 
 {
-    float j = 4096.0 * sin(dot(c,vec3(17.0, 59.4, 15.0)));
+    float j = seed * 4096.0 * sin(dot(c,vec3(17.0, 59.4, 15.0)));
     vec3 r;
     r.z = fract(512.0 * j);
     j *= 0.125;
@@ -59,8 +62,8 @@ float simplex_noise(vec3 p)
 float height_map(in vec3 position)
 {
 	return simplex_noise(position)
-		+ simplex_noise(2.0 * position) / 2.0 
-		+ simplex_noise(4.0 * position) / 4.0
+		+ simplex_noise(2.0 * position) / 4.0 
+		+ simplex_noise(4.0 * position) / 8.0
 		+ simplex_noise(8.0 * position) / 8.0
 		+ simplex_noise(16.0 * position) / 16.0
 		+ simplex_noise(32.0 * position) / 32.0;
@@ -97,11 +100,17 @@ void fragment()
 {
 	// use model normal to generate height map
 	float height = height_map(COLOR.rgb);
-	if(height < 0.1) {
+	if(height < 0.06) {
 		ALBEDO = below_water.rgb;
 	}
-	else if(height < 0.25) {
+	else if(height < 0.1) {
+		ALBEDO = beach.rgb;
+	}
+	else if(height < 0.20) {
 		ALBEDO = low_land.rgb;
+	}
+	else if(height < 0.26) {
+		ALBEDO = mid_land.rgb;
 	}
 	else if(height < 0.32) {
 		ALBEDO = high_land.rgb;

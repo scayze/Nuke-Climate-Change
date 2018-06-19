@@ -5,9 +5,11 @@ uniform vec4 low : hint_color;
 uniform vec4 mid : hint_color;
 uniform vec4 high : hint_color;
 
+uniform float seed = 14.0;
+
 vec3 random3(vec3 c) 
 {
-    float j = 4096.0 * sin(dot(c,vec3(17.0, 59.4, 15.0)));
+    float j = seed * 4096.0 * sin(dot(c,vec3(17.0, 59.4, 15.0)));
     vec3 r;
     r.z = fract(512.0 * j);
     j *= 0.125;
@@ -56,9 +58,9 @@ float height_map(in vec3 position)
 	return simplex_noise(position)
 		+ simplex_noise(2.0 * position) / 2.0 
 		+ simplex_noise(4.0 * position) / 4.0
-		+ simplex_noise(8.0 * position) / 8.0
-		+ simplex_noise(16.0 * position) / 16.0
-		+ simplex_noise(32.0 * position) / 32.0;
+		+ simplex_noise(8.0 * position) / 8.0;
+		//+ simplex_noise(16.0 * position) / 16.0;
+		//+ simplex_noise(32.0 * position) / 32.0;
 }
 
 void vertex()
@@ -77,13 +79,6 @@ void vertex()
 	else {
 		multi = 7.5;
 	}
-}
-
-vec4 cloud(in vec3 position, in float time)
-{
-	float height = clamp(height_map(position * 3.0 + time / 20.0), 0.0, 1.0) * 0.9;
-	
-	return vec4(height, height, height, height);
 }
 
 void fragment()
